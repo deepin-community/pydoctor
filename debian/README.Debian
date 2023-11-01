@@ -1,0 +1,10 @@
+For pydoctor 16.3.0-2.1, I have removed the dependency on epydoc, which works
+with Python 2 only, and will be removed from Debian soon.  When epydoc is not
+available, pydoctor falls back on plain text formatting.  The result is not as
+pretty as the original, but it is legible. For more information, see bug
+#932584.
+
+Note that pydoctor itself works only with Python 2, and will eventully
+also have to be removed from Debian.  But, this change buys some time.
+
+ -- Kenneth J. Pronovici <pronovic@debian.org>  Tue, 30 Jul 2019 23:07:46 +0000

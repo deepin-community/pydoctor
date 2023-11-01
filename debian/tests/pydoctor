@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e -u
+cp -a pydoctor "${AUTOPKGTEST_TMP}"
+
+for py3vers in $(py3versions -s); do
+    echo
+    echo "***************************"
+    echo "*** Testing with ${py3vers}"
+    echo "***************************"
+    echo
+    cd ${AUTOPKGTEST_TMP} && \
+        echo "Content of current working folder:\n" && \
+        ls -la && \
+        echo "Running tests...\n" && \
+        trial3 --version && \
+        (python3-coverage report -m || exit 0) && \
+        find pydoctor/ -name \*.py ! -path '*/testpackages/*' ! -path '*/sre_parse36.py' ! -path '*/sre_constants36.py' | xargs pyflakes3
+done
+
+echo
+
+exit 0

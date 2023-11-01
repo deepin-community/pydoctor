@@ -1,0 +1,9 @@
+Tests: pydoctor
+Depends:
+ pydoctor,
+ pyflakes3,
+ python3-all,
+ python3-coverage,
+ python3-hypothesis,
+ python3-pytest,
+Restrictions: allow-stderr

@@ -1,5 +1,361 @@
-template-repository (1.0-1) unstable; urgency=medium
+pydoctor (23.4.1-1) unstable; urgency=medium
 
-  * Initial release
+  * Team upload
+  * New upstream version 23.4.1
+  * Drop patch queue
+  * d/control: Update Standards-Version to 4.6.2
+    No further changes needed.
+  * d/copyright: Update years on copyright holders
 
- -- Tsic404 <liuheng@deepin.org>  Sat, 28 Jan 2023 13:46:49 +0800
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Tue, 05 Sep 2023 21:50:32 +0530
+
+pydoctor (22.9.1-4) unstable; urgency=medium
+
+  * Team upload.
+  * Add upstream patches for Python 3.11 (Closes: #1028873)
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Sun, 29 Jan 2023 18:20:32 +0100
+
+pydoctor (22.9.1-3) unstable; urgency=medium
+
+  [ Debian Janitor ]
+  * Update lintian override info to new format on line 2.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 22 Oct 2022 11:10:06 +0100
+
+pydoctor (22.9.1-2) unstable; urgency=medium
+
+  [ Jelmer Vernooĳ ]
+  * Depend on python3-filelock rather than python3-lockfile, following
+    python3-cachecontrol. Closes: #1020024
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Mon, 03 Oct 2022 05:19:23 +0100
+
+pydoctor (22.9.1-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 22.9.1
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Mon, 19 Sep 2022 20:04:02 +0200
+
+pydoctor (22.9.0-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 22.9.0
+  * d/control: Add python3-setuptools to B-D
+    (Closes: #1020016)
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Sun, 18 Sep 2022 10:02:43 +0200
+
+pydoctor (22.7.0-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 22.7.0
+  * d/control: Update Standards-Version to 4.6.1
+    No further changes needed.
+  * d/README.source: Fix small stupid typo
+  * Lintian: Adjust override ruling
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Sat, 16 Jul 2022 08:14:53 +0200
+
+pydoctor (22.5.1-1) unstable; urgency=medium
+
+  * Team upload
+  * d/watch: Adjust watch logic
+  * New upstream version 22.5.1
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Tue, 17 May 2022 14:48:37 +0200
+
+pydoctor (22.4.0-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 22.4.0
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Sat, 02 Apr 2022 12:40:32 +0200
+
+pydoctor (22.3.0-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 22.3.0
+  * d/control: Adding dep on python3-lunr
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Wed, 23 Mar 2022 10:43:04 +0100
+
+pydoctor (22.2.2-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 22.2.2
+  * d/control: Running wrap-and-sort -ast
+  * d/control: Add B-D for using poetry and pyproject
+  * d/rules: Use pyproject to build package
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Fri, 25 Feb 2022 21:24:54 +0100
+
+pydoctor (21.12.1-1) unstable; urgency=medium
+
+  * Team upload
+
+  [ Anthony Fok ]
+  * Set debian/watch to track released tarballs again
+
+  [ Carsten Schoenert ]
+  * New upstream version 21.12.1
+  * d/gbp.conf: Add some more useful defaults
+  * d/README.source: Add packaging management hints
+  * d/rules: Adjust commands for dh_auto_test
+  * autopktest: Adjust also here the commands to call
+  * d/control: Remove python3-six from B-D list
+  * d/rules: Remove cruft file before deb creation
+  * d/control: Update Standards-Version to 4.6.0
+    No further changes needed.
+  * d/control: Bump debhelper version to 13
+  * d/copyright: Update years on copyright holders
+  * Lintian: Ignore some html files, that's not documentation
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Sat, 15 Jan 2022 09:08:27 +0100
+
+pydoctor (19.11.0+git20200303.47424e7-2) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/control: Update Maintainer field with new Debian Python Team
+    contact address.
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Debian Janitor ]
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository.
+
+ -- Sandro Tosi <morph@debian.org>  Wed, 15 Sep 2021 23:16:27 -0400
+
+pydoctor (19.11.0+git20200303.47424e7-1) unstable; urgency=medium
+
+  * New upstream version 19.11.0+git20200303.47424e7
+  * debian/gbp.conf: Set debian-branch to debian/master for DEP-14 conformance
+  * Add "export PYBUILD_NAME := pydoctor" in debian/rules
+    and remove transitional package python-doctor
+    and delete debian/pydoctor.install so that
+    pybuild installs all files to the binary pydoctor package correctly
+  * Run custom tests specified in upstream tox.ini and install
+    python3-{coverage,hypothesis,incremental,pytest,twisted,flakes}
+    and add debian/pybuild.testfiles for the tests to work
+  * Add debian/tests/control and debian/tests/pydoctor for autopkgtest
+  * debian/clean: Clean up .pytest_cache/ too
+  * Install missing sources for bootstrap.min.css from bootstrap-3.3.4/less
+    downloaded from https://github.com/twbs/bootstrap/archive/v3.3.4.tar.gz ,
+    see https://lists.debian.org/debian-devel/2020/03/msg00027.html
+  * Fix typos in debian/pydoctor.1 and debian/README.Debian
+
+ -- Anthony Fok <foka@debian.org>  Thu, 05 Mar 2020 14:42:38 -0700
+
+pydoctor (19.11.0+git20200114.c74016b-2) unstable; urgency=medium
+
+  * Remove empty debian/patches/series file
+  * Add missing embedded epydoc and Bootstrap copyright info
+    as well as non-minified source for bootstrap.min.css (Bootstrap v3.3.4)
+    for DFSG compliance.  Special thanks to Sean Whitton for the report.
+    (Closes: #952546)
+  * Also expand pydoctor copyright info:
+     - Update Michael Hudson’s name to Michael Hudson-Doyle
+     - Add Maarten ter Huurne
+  * Fix empty package by adding debian/pydoctor.install
+  * Symlink to bootstrap.min.css from libjs-bootstrap instead of shipping
+    pydoctor included bootstrap.min.css v3.3.4 from 2015
+  * Add debian/clean to remove pydoctor.egg-info/
+  * Add myself to the list of Uploaders and to debian/copyright
+
+ -- Anthony Fok <foka@debian.org>  Tue, 25 Feb 2020 16:00:02 -0700
+
+pydoctor (19.11.0+git20200114.c74016b-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream version 19.11.0+git20200114.c74016b
+  * debian/watch: Track HEAD on GitHub for now for python3 compatibility.
+  * Apply "cme fix dpkg" fixes:
+    - Bump Standards-Version to 4.5.0 (no change)
+    - Reformat debian/control for easier human reading
+    - Change license shortname "MIT" to "Expat" in debian/copyright
+  * Remove dependency on python-nevow which upstream has stopped using
+    since 2013.
+  * Switch to Python 3, and rename binary package to pydoctor
+    because it is a Python application and not used as a module.
+    Also add explicit dependency on python3-lockfile as recommended
+    by Andrej Shadura. (Closes: #937421, #948831, #949232)
+  * debian/rules: Change "dh $*" to "dh $@" (Lintian I: no-dh-sequencer)
+
+ -- Anthony Fok <foka@debian.org>  Sun, 23 Feb 2020 07:34:00 -0700
+
+pydoctor (19.11.0-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/copyright: Use https protocol in Format field
+  * Remove debian/pycompat, it's not used by any modern Python helper
+  * d/control: Add Vcs-* field
+  * Use debhelper-compat instead of debian/compat.
+  * d/changelog: Remove trailing whitespaces.
+  * d/control: Fix wrong Vcs-*.
+
+  [ Debian Janitor ]
+  * Trim trailing whitespace.
+  * Remove obsolete debian/pyversions.
+  * Bump debhelper from old 9 to 12.
+  * Set upstream metadata fields: Repository.
+  * Set upstream metadata fields: Repository-Browse.
+
+  [ Jelmer Vernooĳ ]
+  * Drop unnecessary bzr-builddeb file.
+  * New upstream release.
+   + Add build-dependency on python-incremental.
+  * Bump standards version to 4.4.1.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sun, 15 Dec 2019 13:50:31 +0000
+
+pydoctor (16.3.0-2.1) unstable; urgency=medium
+
+  * Non-maintainer upload
+  * Remove dependency on epydoc (closes: #881550, #932584)
+    - Add debian/README.Debian explaining this change
+    - Adjust debian/control to remove Depends on python-epydoc
+    - Adjust setup.py and setup.cfg to remove reference to epydoc
+
+ -- Kenneth J. Pronovici <pronovic@debian.org>  Tue, 30 Jul 2019 23:07:46 +0000
+
+pydoctor (16.3.0-2) unstable; urgency=medium
+
+  * Add missing dependency on dh-python.
+  * Bump standards version to 4.1.4.
+  * Change maintainer to Python Application Packaging Team. Closes: #899661
+  * Move Vcs-Git to salsa.
+  * Set homepage field. Thanks, Chris Lamb. Closes: #884255
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 02 Jun 2018 13:30:18 +0100
+
+pydoctor (16.3.0-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Change debhelper compatibility to 9.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sun, 22 Jan 2017 16:38:19 +0000
+
+pydoctor (15.1.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Remove fix-unicode.diff: applied upstream.
+  * Update watch file.
+  * Bump standards version to 3.9.8 (no changes).
+  * Drop -b unstable from Vcs-Git header.
+  * Drop source-date-epoch patch: applied upstream.
+  * Drop patch fix-unicode.diff: applied upstream.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sun, 03 Jul 2016 21:22:01 +0000
+
+pydoctor (0.5+git20151204-2) unstable; urgency=medium
+
+  * Add patch fix-unicode.diff, to hack in support for newer versions of
+    twisted. Closes: #807088
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Tue, 08 Dec 2015 00:30:58 +0000
+
+pydoctor (0.5+git20151204-1) unstable; urgency=medium
+
+  * New upstream snapshot.
+  * Bump standards version to 3.9.6 (no changes).
+  * Change Vcs header to Git.
+  * Add build dependency on python-setuptools.
+  * Add patch source-date-epoch.diff: Support SOURCE_DATE_EPOCH environment
+    variable. Closes: #807166
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Fri, 04 Dec 2015 23:24:07 +0000
+
+pydoctor (0.5+git20150410-2) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Sat, 25 Apr 2015 15:16:25 +0000
+
+pydoctor (0.5+git20150410-1) experimental; urgency=medium
+
+  * New upstream snapshot.
+    + Makes output reproducible. Closes: #776783
+  * Fix watch file.
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Tue, 22 Jul 2014 03:36:12 +0200
+
+pydoctor (0.5+bzr616-1) unstable; urgency=medium
+
+  * New upstream snapshot.
+  * Bump standards version to 3.9.5 (no changes).
+  * Fix Vcs-Bzr URL.
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Sun, 06 Jul 2014 05:10:40 +0200
+
+pydoctor (0.5b1+bzr603-1) unstable; urgency=low
+
+  * New upstream snapshot.
+  * Switch from cdbs to dh.
+  * Bump standards version to 3.9.4 (no changes).
+  * Update Vcs header.
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Sun, 15 Sep 2013 13:58:49 +0100
+
+pydoctor (0.3+bzr567-1) unstable; urgency=low
+
+  * Drop Guido from uploaders per his request.
+  * New upstream snapshot.
+   + Add basic support for introspection. Closes: #538984
+  * Bump standards version to 3.9.1 (no changes).
+  * Add watch file.
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Mon, 06 Dec 2010 17:52:23 +0100
+
+pydoctor (0.3-1) unstable; urgency=low
+
+  * New upstream release.
+  * Add myself to uploaders.
+  * Bump standards version to 3.8.4.
+  * Use source format 3.
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Mon, 29 Mar 2010 16:46:14 +0200
+
+pydoctor (0.2-4.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * pydoctor/ast_pp.py
+    - applied patch from upstream to add compatibility with Python 2.6; thanks
+      to Seo Sanghyeon for the report; Closes: #539600
+  * debian/control
+    - set priority to 'optional' to match override file
+    - b-d on python instead of python-dev, since building an arch:all package
+
+ -- Sandro Tosi <morph@debian.org>  Tue, 02 Mar 2010 13:21:30 +0100
+
+pydoctor (0.2-4) unstable; urgency=low
+
+  * change section to extra since nevow is in extra
+
+ -- Guido Guenther <agx@sigxcpu.org>  Wed, 21 Nov 2007 19:50:09 +0100
+
+pydoctor (0.2-3) unstable; urgency=low
+
+  * add maintainer name
+
+ -- Guido Guenther <agx@sigxcpu.org>  Sun, 19 Aug 2007 14:04:13 +0200
+
+pydoctor (0.2-2) unstable; urgency=low
+
+  * first upload to unstable (Closes: #435847)
+  * set calendarserver-maintainers as maintainers
+  * no need for quilt at the moment
+
+ -- Guido Guenther <agx@sigxcpu.org>  Fri, 03 Aug 2007 17:30:41 +0200
+
+pydoctor (0.2-1) calendarserver; urgency=low
+
+  * New Upstream Version
+
+ -- Guido Guenther <agx@sigxcpu.org>  Fri, 29 Sep 2006 19:04:01 +0200
+
+pydoctor (0.0.svn31879-1) calendarserver; urgency=low
+
+  * Initial release.
+
+ -- Guido Guenther <agx@sigxcpu.org>  Thu, 28 Sep 2006 19:07:50 +0200

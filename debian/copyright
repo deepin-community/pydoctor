@@ -1,22 +1,105 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: template-repository
-Source: https://github.com/deepin-community/template-repository
+Upstream-Name: pydoctor
+Upstream-Contact: Michael Hudson-Doyle <michael.hudson@canonical.com>
+                  Maarten ter Huurne <maarten@treewalker.org>
+Source: https://github.com/twisted/pydoctor
+Debianized-By: Guido Guenther <agx@sigxcpu.org>
+Debianized-Date: Thu, 28 Sep 2006 19:07:50 +0200
 
 Files: *
-Copyright: 2023 Tsic404 <liuheng@deepin.org>
-License: GPL-2+
- This package is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
+Copyright: 2006-2023 Michael Hudson-Doyle <michael.hudson@canonical.com>
+           2019-2023 Maarten ter Huurne <maarten@treewalker.org>
+License: MIT
+ All Rights Reserved
  .
- This package is distributed in the hope that it will be useful,
+ Permission to use, copy, modify, and distribute this software and its
+ documentation for any purpose is hereby granted without fee, provided
+ that the above copyright notice appear in all copies and that both
+ that copyright notice and this permission notice appear in supporting
+ documentation.
+ .
+ THE AUTHOR MICHAEL HUDSON DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS, IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL,
+ INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
+ FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+ NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+ WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+Comment: Michael Hudson-Doyle is a.k.a. Michael Hudson <mwh@python.net>
+
+Files: debian/*
+Copyright: 2006 Guido Guenther <agx@sigxcpu.org>
+           2013 Jelmer Vernooĳ <jelmer@debian.org>
+           2020 Anthony Fok <foka@debian.org>
+License: GPL
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation.
+ .
+ This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program. If not, see <https://www.gnu.org/licenses/>
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  .
- On Debian systems, the complete text of the GNU General
- Public License version 2 can be found in "/usr/share/common-licenses/GPL-2".
+ On Debian systems, the full text of the GPL can be found in
+ /usr/share/common-licenses/GPL
+
+Files: pydoctor/epydoc/*
+Copyright: 2005 Edward Loper <edloper@loper.org>
+           2019 Maarten ter Huurne <maarten@treewalker.org>
+License: Expat-epydoc
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and any associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use, copy,
+ modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ .
+ The software is provided "as is", without warranty of any
+ kind, express or implied, including but not limited to the
+ warranties of merchantability, fitness for a particular purpose
+ and noninfringement. In no event shall the authors or copyright
+ holders be liable for any claim, damages or other liability,
+ whether in an action of contract, tort or otherwise, arising from,
+ out of or in connection with the software or the use or other
+ dealings in the software.
+Comment: pydoctor/epydoc/__init__.py mentions the "IBM Open Source License",
+ which AFAIK does not exist as it is neither the IBM® Public License (IPL)
+ nor the Common Public License (CPL), hence the Expat license found in
+ pydoctor/epydoc/LICENSE.epydoc.txt takes precedence.
+
+Files: debian/missing-sources/pydoctor/templates/bootstrap.css
+       pydoctor/themes/classic/bootstrap.min.css
+Copyright: 2011-2015 Twitter, Inc.
+           Embedded copy of normalize.css v3.0.2:
+           2011-2014 Nicolas Gallagher <nicolas@nicolasgallagher.com>
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+Comment: These files are copies of vanilla Bootstrap v3.3.4 CSS files,
+ identical to those distributed on Bootstrap CDN:
+  * https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.css
+  * https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css
