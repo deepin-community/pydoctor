@@ -1,0 +1,29 @@
+[run]
+branch = True
+omit =
+    pydoctor/sphinx_ext/*
+    pydoctor/test/*
+    pydoctor/epydoc/sre_parse36.py
+    pydoctor/epydoc/sre_constants36.py
+source =
+    pydoctor
+
+[report]
+exclude_lines =
+    # Manually marked:
+    pragma: no cover
+
+    # Intended to be unreachable:
+    raise NotImplementedError$
+    raise NotImplementedError\(
+    raise AssertionError$
+    raise AssertionError\(
+    assert False$
+    assert False,
+
+    # Debug-only code:
+    def __repr__\(
+
+    # Exclusive to mypy:
+    if TYPE_CHECKING:$
+    \.\.\.$
