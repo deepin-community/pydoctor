@@ -1,0 +1,2 @@
+# This isn't documentation, it's required content.
+pydoctor: package-contains-documentation-outside-usr-share-doc [*]
