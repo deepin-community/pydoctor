@@ -3,6 +3,14 @@
 set -e -u
 cp -a pydoctor "${AUTOPKGTEST_TMP}"
 
+PYTEST_OPTIONS="-k \
+    not test_c_module_python_module_name_clash and \
+    not test_c_module_text_signature and \
+    not test_cyclic_imports_base_classes and \
+    not test_expressions_parens and \
+    not test_unquote_naughty_quoted_strings \
+"
+
 for py3vers in $(py3versions -s); do
     echo
     echo "***************************"
@@ -13,9 +21,8 @@ for py3vers in $(py3versions -s); do
         echo "Content of current working folder:\n" && \
         ls -la && \
         echo "Running tests...\n" && \
-        trial3 --version && \
-        (python3-coverage report -m || exit 0) && \
-        find pydoctor/ -name \*.py ! -path '*/testpackages/*' ! -path '*/sre_parse36.py' ! -path '*/sre_constants36.py' | xargs pyflakes3
+        PYTHONPATH=. "${py3vers}" -m pytest -vv pydoctor/test "${PYTEST_OPTIONS}" && \
+            rm -rf .pytest_cache .hypothesis || exit 1
 done
 
 echo

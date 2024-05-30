@@ -267,9 +267,18 @@ class Documentable:
         self.system.allobjects[self.fullName()] = self
         for o in self.contents.values():
             o._handle_reparenting_post()
-
+    
     def _localNameToFullName(self, name: str) -> str:
         raise NotImplementedError(self._localNameToFullName)
+    
+    def isNameDefined(self, name:str) -> bool:
+        """
+        Is the given name defined in the globals/locals of self-context?
+        Only the first name of a dotted name is checked.
+
+        Returns True iff the given name can be loaded without raising `NameError`.
+        """
+        raise NotImplementedError(self.isNameDefined)
 
     def expandName(self, name: str) -> str:
         """Return a fully qualified name for the possibly-dotted `name`.
@@ -401,7 +410,18 @@ class CanContainImportsDocumentable(Documentable):
     def setup(self) -> None:
         super().setup()
         self._localNameToFullName_map: Dict[str, str] = {}
-
+    
+    def isNameDefined(self, name: str) -> bool:
+        name = name.split('.')[0]
+        if name in self.contents:
+            return True
+        if name in self._localNameToFullName_map:
+            return True
+        if not isinstance(self, Module):
+            return self.module.isNameDefined(name)
+        else:
+            return False
+    
 
 class Module(CanContainImportsDocumentable):
     kind = DocumentableKind.MODULE
@@ -511,7 +531,7 @@ def is_exception(cls: 'Class') -> bool:
             return True
     return False
 
-def compute_mro(cls:'Class') -> List[Union['Class', str]]:
+def compute_mro(cls:'Class') -> Sequence[Union['Class', str]]:
     """
     Compute the method resolution order for this class.
     This function will also set the 
@@ -594,7 +614,7 @@ class Class(CanContainImportsDocumentable):
     # set in post-processing:
     _finalbaseobjects: Optional[List[Optional['Class']]] = None 
     _finalbases: Optional[List[str]] = None
-    _mro: Optional[List[Union['Class', str]]] = None
+    _mro: Optional[Sequence[Union['Class', str]]] = None
 
     def setup(self) -> None:
         super().setup()
@@ -659,10 +679,10 @@ class Class(CanContainImportsDocumentable):
         epydoc2stan.populate_constructors_extra_info(self)
 
     @overload
-    def mro(self, include_external:'Literal[True]', include_self:bool=True) -> List[Union['Class', str]]:...
+    def mro(self, include_external:'Literal[True]', include_self:bool=True) -> Sequence[Union['Class', str]]:...
     @overload
-    def mro(self, include_external:'Literal[False]'=False, include_self:bool=True) -> List['Class']:...
-    def mro(self, include_external:bool=False, include_self:bool=True) -> List[Union['Class', str]]: # type:ignore[misc]
+    def mro(self, include_external:'Literal[False]'=False, include_self:bool=True) -> Sequence['Class']:...
+    def mro(self, include_external:bool=False, include_self:bool=True) -> Sequence[Union['Class', str]]:
         """
         Get the method resution order of this class. 
 
@@ -671,8 +691,7 @@ class Class(CanContainImportsDocumentable):
         """
         if self._mro is None:
             return list(self.allbases(include_self))
-        
-        _mro: List[Union[str, Class]]
+        _mro: Sequence[Union[str, Class]]
         if include_external is False:
             _mro = [o for o in self._mro if not isinstance(o, str)]
         else:
@@ -791,6 +810,9 @@ class Inheritable(Documentable):
 
     def _localNameToFullName(self, name: str) -> str:
         return self.parent._localNameToFullName(name)
+    
+    def isNameDefined(self, name: str) -> bool:
+        return self.parent.isNameDefined(name)
 
 class Function(Inheritable):
     kind = DocumentableKind.FUNCTION
@@ -818,7 +840,7 @@ class FunctionOverload:
 
 class Attribute(Inheritable):
     kind: Optional[DocumentableKind] = DocumentableKind.ATTRIBUTE
-    annotation: Optional[ast.expr]
+    annotation: Optional[ast.expr] = None
     decorators: Optional[Sequence[ast.expr]] = None
     value: Optional[ast.expr] = None
     """
@@ -1231,12 +1253,15 @@ class System:
             self.unprocessed_modules.remove(first)
             self._addUnprocessedModule(dup)
 
-    def _introspectThing(self, thing: object, parent: Documentable, parentMod: _ModuleT) -> None:
+    def _introspectThing(self, thing: object, parent: CanContainImportsDocumentable, parentMod: _ModuleT) -> None:
         for k, v in thing.__dict__.items():
             if (isinstance(v, func_types)
                     # In PyPy 7.3.1, functions from extensions are not
-                    # instances of the abstract types in func_types
-                    or (hasattr(v, "__class__") and v.__class__.__name__ == 'builtin_function_or_method')):
+                    # instances of the abstract types in func_types, it will have the type 'builtin_function_or_method'.
+                    # Additionnaly cython3 produces function of type 'cython_function_or_method', 
+                    # so se use a heuristic on the class name as a fall back detection.
+                    or (hasattr(v, "__class__") and 
+                        v.__class__.__name__.endswith('function_or_method'))):
                 f = self.Function(self, k, parent)
                 f.parentMod = parentMod
                 f.docstring = v.__doc__
@@ -1411,23 +1436,24 @@ class System:
         without the risk of drawing incorrect conclusions because modules
         were not fully processed yet.
         """
-
-        # default post-processing includes:
-        # - Processing of subclasses
-        # - MRO computing.
-        # - Lookup of constructors
-        # - Checking whether the class is an exception
         for cls in self.objectsOfType(Class):
             
+            # Initiate the MROs
             cls._init_mro()
+            # Lookup of constructors
             cls._init_constructors()
             
+            # Compute subclasses
             for b in cls.baseobjects:
                 if b is not None:
                     b.subclasses.append(cls)
             
+            # Checking whether the class is an exception
             if is_exception(cls):
                 cls.kind = DocumentableKind.EXCEPTION
+
+        for attrib in self.objectsOfType(Attribute):
+            _inherits_instance_variable_kind(attrib)
 
         for post_processor in self._post_processors:
             post_processor(self)
@@ -1439,6 +1465,20 @@ class System:
         """
         for url in self.options.intersphinx:
             self.intersphinx.update(cache, url)
+
+def _inherits_instance_variable_kind(attr: Attribute) -> None:
+    """
+    If any of the inherited members of a class variable is an instance variable,
+    then the subclass' class variable become an instance variable as well.
+    """
+    if attr.kind is not DocumentableKind.CLASS_VARIABLE:
+        return
+    docsources = attr.docsources()
+    next(docsources)
+    for inherited in docsources:
+        if inherited.kind is DocumentableKind.INSTANCE_VARIABLE:
+            attr.kind = DocumentableKind.INSTANCE_VARIABLE
+            break
 
 def get_docstring(
         obj: Documentable
