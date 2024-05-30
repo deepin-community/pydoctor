@@ -7,24 +7,21 @@ Section: python
 Priority: optional
 Build-Depends:
  debhelper-compat (= 13),
+ dh-python,
  python3-all,
 Build-Depends-Indep:
- dh-python,
  pybuild-plugin-pyproject,
- pyflakes3,
- python3-appdirs,
- python3-astor,
- python3-cachecontrol (>= 0.12.12),
- python3-coverage,
- python3-docutils,
- python3-hypothesis,
- python3-incremental,
- python3-filelock,
+ python3-appdirs <!nocheck>,
+ python3-astor <!nocheck>,
+ python3-bs4 <!nocheck>,
+ python3-configargparse <!nocheck>,
+ python3-hypothesis <!nocheck>,
+ python3-lunr <!nocheck>,
  python3-poetry,
- python3-pytest,
- python3-requests,
+ python3-pytest <!nocheck>,
  python3-setuptools,
- python3-twisted,
+ python3-twisted <!nocheck>,
+ sphinx <!nocheck>,
 Standards-Version: 4.6.2
 Vcs-Browser: https://salsa.debian.org/python-team/packages/pydoctor
 Vcs-Git: https://salsa.debian.org/python-team/packages/pydoctor.git
