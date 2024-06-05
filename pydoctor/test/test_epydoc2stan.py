@@ -6,13 +6,14 @@ import pytest
 from twisted.web.template import Tag, tags
 
 from pydoctor import epydoc2stan, model, linker
-from pydoctor.epydoc.markup import DocstringLinker, get_supported_docformats
+from pydoctor.epydoc.markup import get_supported_docformats
 from pydoctor.stanutils import flatten, flatten_text
 from pydoctor.epydoc.markup.epytext import ParsedEpytextDocstring
 from pydoctor.sphinx import SphinxInventory
 from pydoctor.test.test_astbuilder import fromText, unwrap
-from pydoctor.test import CapSys
+from pydoctor.test import CapSys, NotFoundLinker
 from pydoctor.templatewriter.search import stem_identifier
+from pydoctor.templatewriter.pages import format_signature, format_class_signature
 
 if TYPE_CHECKING:
     from twisted.web.template import Flattenable
@@ -695,6 +696,114 @@ def test_func_starargs_more(capsys: CapSys) -> None:
     captured = capsys.readouterr().out
     assert not captured
 
+def test_func_starargs_hidden_when_keywords_documented(capsys:CapSys) -> None:
+    """
+    When a function accept variable keywords (**kwargs) and keywords are specifically
+    documented and the **kwargs IS NOT documented: entry for **kwargs IS NOT presented at all.
+
+    In other words: They variable keywords argument documentation is optional when specific documentation
+    is given for each keyword, and when missing, no warning is raised.
+    """
+    # tests for issue https://github.com/twisted/pydoctor/issues/697
+
+    mod = fromText('''
+    __docformat__='restructuredtext'
+    def f(one, two, **kwa) -> None:
+        """
+        var-keyword arguments are specifically documented. 
+
+        :param one: some regular argument
+        :param two: some regular argument
+        :keyword something: An argument
+        :keyword another: Another
+        """
+    ''')
+
+    html = docstring2html(mod.contents['f'])
+    assert '**kwa' not in html
+    assert not capsys.readouterr().out
+
+def test_func_starargs_shown_when_documented(capsys:CapSys) -> None:
+    """
+    When a function accept variable keywords (**kwargs) and keywords are specifically
+    documented and the **kwargs IS documented: entry for **kwargs IS presented AFTER all keywords.
+
+    In other words: When a function has the keywords arguments, the keywords can have dedicated 
+    docstring, besides the separate documentation for each keyword.
+    """
+
+    mod = fromText('''
+    __docformat__='restructuredtext'
+    def f(one, two, **kwa) -> None:
+        """
+       var-keyword arguments are specifically documented as well as other extra keywords.
+
+        :param one: some regular argument
+        :param two: some regular argument
+        :param kwa: Other keywords are passed to ``parse`` function.
+        :keyword something: An argument
+        :keyword another: Another
+        """
+    ''')
+    html = docstring2html(mod.contents['f'])
+    # **kwa should be presented AFTER all other parameters
+    assert re.match('.+one.+two.+something.+another.+kwa', html, flags=re.DOTALL)
+    assert not capsys.readouterr().out
+
+def test_func_starargs_shown_when_undocumented(capsys:CapSys) -> None:
+    """
+    When a function accept variable keywords (**kwargs) and NO keywords are specifically
+    documented and the **kwargs IS NOT documented: entry for **kwargs IS presented as undocumented.
+    """
+
+    mod = fromText('''
+    __docformat__='restructuredtext'
+    def f(one, two, **kwa) -> None:
+        """
+        var-keyword arguments are not specifically documented
+
+        :param one: some regular argument
+        :param two: some regular argument
+        """
+    ''')
+
+    html = docstring2html(mod.contents['f'])
+    assert re.match('.+one.+two.+kwa', html, flags=re.DOTALL)
+    assert not capsys.readouterr().out
+
+def test_func_starargs_wrongly_documented(capsys: CapSys) -> None:
+    numpy_wrong = fromText('''
+    __docformat__='numpy'
+    def f(one, **kwargs):
+        """
+        var-keyword arguments are wrongly documented with the "Arguments" section.
+
+        Arguments
+        ---------
+        kwargs:
+            var-keyword arguments
+        stuff:
+            a var-keyword argument
+        """
+    ''', modname='numpy_wrong')
+
+    rst_wrong = fromText('''
+    __docformat__='restructuredtext'
+    def f(one, **kwargs):
+        """
+        var-keyword arguments are wrongly documented with the "param" field.
+
+        :param kwargs: var-keyword arguments
+        :param stuff: a var-keyword argument
+        """
+    ''', modname='rst_wrong')
+
+    docstring2html(numpy_wrong.contents['f'])
+    assert 'Documented parameter "stuff" does not exist, variable keywords should be documented with the "Keyword Arguments" section' in capsys.readouterr().out
+    
+    docstring2html(rst_wrong.contents['f'])
+    assert 'Documented parameter "stuff" does not exist, variable keywords should be documented with the "keyword" field' in capsys.readouterr().out
+
 def test_summary() -> None:
     mod = fromText('''
     def single_line_summary():
@@ -1013,7 +1122,7 @@ def test_EpydocLinker_resolve_identifier_xref_intersphinx_absolute_id() -> None:
     sut = target.docstring_linker
     assert isinstance(sut, linker._EpydocLinker)
 
-    url = sut.resolve_identifier('base.module.other')
+    url = sut.link_to('base.module.other', 'o').attributes['href']
     url_xref = sut._resolve_identifier_xref('base.module.other', 0)
 
     assert "http://tm.tld/some.html" == url
@@ -1040,7 +1149,7 @@ def test_EpydocLinker_resolve_identifier_xref_intersphinx_relative_id() -> None:
     assert isinstance(sut, linker._EpydocLinker)
 
     # This is called for the L{ext_module<Pretty Text>} markup.
-    url = sut.resolve_identifier('ext_module')
+    url = sut.link_to('ext_module', 'ext').attributes['href']
     url_xref = sut._resolve_identifier_xref('ext_module', 0)
 
     assert "http://tm.tld/some.html" == url
@@ -1065,7 +1174,7 @@ def test_EpydocLinker_resolve_identifier_xref_intersphinx_link_not_found(capsys:
     assert isinstance(sut, linker._EpydocLinker)
 
     # This is called for the L{ext_module} markup.
-    assert sut.resolve_identifier('ext_module') is None
+    assert sut.link_to('ext_module', 'ext').tagName == ''
     assert not capsys.readouterr().out
     with raises(LookupError):
         sut._resolve_identifier_xref('ext_module', 0)
@@ -1104,7 +1213,7 @@ def test_EpydocLinker_resolve_identifier_xref_order(capsys: CapSys) -> None:
     _linker = mod.docstring_linker
     assert isinstance(_linker, linker._EpydocLinker)
 
-    url = _linker.resolve_identifier('socket.socket')
+    url = _linker.link_to('socket.socket', 's').attributes['href']
     url_xref = _linker._resolve_identifier_xref('socket.socket', 0)
 
     assert 'https://docs.python.org/3/library/socket.html#socket.socket' == url
@@ -1126,7 +1235,7 @@ def test_EpydocLinker_resolve_identifier_xref_internal_full_name() -> None:
     target = model.Module(system, 'ignore-name')
     sut = target.docstring_linker
     assert isinstance(sut, linker._EpydocLinker)
-    url = sut.resolve_identifier('internal_module.C')
+    url = sut.link_to('internal_module.C','C').attributes['href']
     xref = sut._resolve_identifier_xref('internal_module.C', 0)
 
     assert "internal_module.C.html" == url
@@ -1134,8 +1243,6 @@ def test_EpydocLinker_resolve_identifier_xref_internal_full_name() -> None:
 
 def test_EpydocLinker_None_context() -> None:
     """
-    When the linker context is None, 
-
     The linker will create URLs with only the anchor
     if we're lnking to an object on the same page. 
     
@@ -1195,6 +1302,28 @@ def test_EpydocLinker_warnings(capsys: CapSys) -> None:
 
     # No warnings are logged when generating the summary.
     assert captured == ''
+
+def test_AnnotationLinker_xref(capsys: CapSys) -> None:
+    """
+    Even if the annotation linker is not designed to resolve xref,
+    it will still do the right thing by forwarding any xref requests to
+    the initial object's linker.
+    """
+
+    mod = fromText('''
+    class C:
+        var="don't use annotation linker for xref!"
+    ''')
+    mod.system.intersphinx = cast(SphinxInventory, InMemoryInventory())
+    _linker = linker._AnnotationLinker(mod.contents['C'])
+    
+    url = flatten(_linker.link_xref('socket.socket', 'socket', 0))
+    assert 'https://docs.python.org/3/library/socket.html#socket.socket' in url
+    assert not capsys.readouterr().out
+
+    url = flatten(_linker.link_xref('var', 'var', 0))
+    assert 'href="#var"' in url
+    assert not capsys.readouterr().out
 
 def test_xref_not_found_epytext(capsys: CapSys) -> None:
     """
@@ -1277,7 +1406,7 @@ def test_xref_not_found_restructured_in_para(capsys: CapSys) -> None:
     captured = capsys.readouterr().out
     assert captured == 'test:8: Cannot find link target for "NoSuchName"\n'
 
-class RecordingAnnotationLinker(DocstringLinker):
+class RecordingAnnotationLinker(NotFoundLinker):
     """A DocstringLinker implementation that cannot find any links,
     but does record which identifiers it was asked to link.
     """
@@ -1286,15 +1415,11 @@ class RecordingAnnotationLinker(DocstringLinker):
         self.requests: List[str] = []
 
     def link_to(self, target: str, label: "Flattenable") -> Tag:
-        self.resolve_identifier(target)
+        self.requests.append(target)
         return tags.transparent(label)
 
     def link_xref(self, target: str, label: "Flattenable", lineno: int) -> Tag:
         assert False
-
-    def resolve_identifier(self, identifier: str) -> Optional[str]:
-        self.requests.append(identifier)
-        return None
 
 @mark.parametrize('annotation', (
     '<bool>',
@@ -1699,6 +1824,185 @@ def test_self_cls_in_function_params(capsys: CapSys) -> None:
     assert '<span class="fieldArg">self</span>' in html_bool
 
 
+# tests for issue https://github.com/twisted/pydoctor/issues/661
+def test_dup_names_resolves_function_signature() -> None:
+    """
+    Annotations should always be resolved in the context of the module scope.
+    
+    For function signature, it's handled by having a special value formatter class for annotations. 
+    For the parameter table it's handled by the field handler.
+
+    Annotation are currently rendered twice, which is suboptimal and can cause inconsistencies.
+    """
+
+    src = '''\
+    class System:
+        dup = Union[str, bytes]
+        default = 3
+        def Attribute(self, t:'dup'=default) -> Type['Attribute']:
+            """
+            @param t: do not confuse with L{the class level one <dup>}.
+            @returns: stuff
+            """
+        
+    Attribute = 'thing'
+    dup = Union[str, bytes] # yes this one
+    default = 'not this one'
+    '''
+
+    mod = fromText(src, modname='model')
+
+    def_Attribute = mod.contents['System'].contents['Attribute']
+    assert isinstance(def_Attribute, model.Function)
+
+    sig = flatten(format_signature(def_Attribute))
+    assert 'href="index.html#Attribute"' in sig
+    assert 'href="index.html#dup"' in sig
+    assert 'href="#default"' in sig
+    
+    docstr = docstring2html(def_Attribute)
+    assert '<a href="index.html#dup" class="internal-link" title="model.dup">dup</a>' in docstr
+    assert '<a href="#dup" class="internal-link" title="model.System.dup">the class level one</a>' in docstr
+    assert 'href="index.html#Attribute"' in docstr
+
+def test_dup_names_resolves_annotation() -> None:
+    """
+    Annotations should always be resolved in the context of the module scope.
+
+    PEP-563 says: Annotations can only use names present in the module scope as 
+        postponed evaluation using local names is not reliable.
+
+    For Attributes, this is handled by the type2stan() function, because name linking is 
+        done at the stan tree generation step.
+    """
+
+    src = '''\
+    class System:
+        Attribute: typing.TypeAlias = 'str'
+        class Inner:
+            @property
+            def Attribute(self) -> Type['Attribute']:...
+        
+    Attribute = Union[str, int]
+    '''
+
+    mod = fromText(src, modname='model')
+
+    property_Attribute = mod.contents['System'].contents['Inner'].contents['Attribute']
+    assert isinstance(property_Attribute, model.Attribute)
+    stan = epydoc2stan.type2stan(property_Attribute)
+    assert stan is not None
+    assert 'href="index.html#Attribute"' in flatten(stan)
+
+    src = '''\
+    class System:
+        Attribute: Type['Attribute']
+        
+    Attribute = Union[str, int]
+    '''
+
+    mod = fromText(src, modname='model')
+
+    property_Attribute = mod.contents['System'].contents['Attribute']
+    assert isinstance(property_Attribute, model.Attribute)
+    stan = epydoc2stan.type2stan(property_Attribute)
+    assert stan is not None
+    assert 'href="index.html#Attribute"' in flatten(stan)
+
+# tests for issue https://github.com/twisted/pydoctor/issues/662
+def test_dup_names_resolves_base_class() -> None:
+    """
+    The class signature does not get confused when duplicate names are used.
+    """
+
+    src1 = '''\
+    from model import System, Generic
+    class System(System):
+        ...
+    class Generic(Generic[object]):
+        ...
+    '''
+    src2 = '''\
+
+    class System:
+        ...
+    class Generic:
+        ...    
+    '''
+    system = model.System()
+    builder = system.systemBuilder(system)
+    builder.addModuleString(src1, modname='custom')
+    builder.addModuleString(src2, modname='model')
+    builder.buildModules()
+
+    custommod,_ = system.rootobjects
+
+    systemClass = custommod.contents['System']
+    genericClass = custommod.contents['Generic']
+
+    assert isinstance(systemClass, model.Class) and isinstance(genericClass, model.Class)
+
+    assert 'href="model.System.html"' in flatten(format_class_signature(systemClass))
+    assert 'href="model.Generic.html"' in flatten(format_class_signature(genericClass))
+
+def test_class_level_type_alias() -> None:
+    src = '''
+    class C:
+        typ = int|str
+        def f(self, x:typ) -> typ:
+            ...
+        var: typ
+    '''
+    mod = fromText(src, modname='m')
+    C = mod.system.allobjects['m.C']
+    f = mod.system.allobjects['m.C.f']
+    var = mod.system.allobjects['m.C.var']
+
+    assert C.isNameDefined('typ')
+
+    assert isinstance(f, model.Function)
+    assert f.signature
+    assert "href" in repr(f.signature.parameters['x'].annotation)
+    assert "href" in repr(f.signature.return_annotation)
+
+    assert isinstance(var, model.Attribute)
+    assert "href" in flatten(epydoc2stan.type2stan(var) or '')
+
+def test_top_level_type_alias_wins_over_class_level(capsys:CapSys) -> None:
+    """
+    Pydoctor resolves annotations like pyright when 
+    "from __future__ import annotations" is enable, even if 
+    it's not actually enabled.
+    """
+    
+    src = '''
+    typ = str|bytes # <- this IS the one
+    class C:
+        typ = int|str # <- This is NOT the one.
+        def f(self, x:typ) -> typ:
+            ...
+        var: typ
+    '''
+    system = model.System()
+    system.options.verbosity = 1
+    mod = fromText(src, modname='m', system=system)
+    f = mod.system.allobjects['m.C.f']
+    var = mod.system.allobjects['m.C.var']
+
+    assert isinstance(f, model.Function)
+    assert f.signature
+    assert 'href="index.html#typ"' in repr(f.signature.parameters['x'].annotation)
+    assert 'href="index.html#typ"' in repr(f.signature.return_annotation)
+
+    assert isinstance(var, model.Attribute)
+    assert 'href="index.html#typ"' in flatten(epydoc2stan.type2stan(var) or '')
+
+    assert capsys.readouterr().out == """\
+m:5: ambiguous annotation 'typ', could be interpreted as 'm.C.typ' instead of 'm.typ'
+m:5: ambiguous annotation 'typ', could be interpreted as 'm.C.typ' instead of 'm.typ'
+m:7: ambiguous annotation 'typ', could be interpreted as 'm.C.typ' instead of 'm.typ'
+"""
+
 def test_not_found_annotation_does_not_create_link() -> None:
     """
     The docstring linker cache does not create empty <a> tags.
@@ -1723,6 +2027,7 @@ def test_not_found_annotation_does_not_create_link() -> None:
     html = getHTMLOf(mod)
 
     assert '<a>NotFound</a>' not in html
+
 
 def test_docformat_skip_processtypes() -> None:
     assert all([d in get_supported_docformats() for d in epydoc2stan._docformat_skip_processtypes])
@@ -1801,3 +2106,46 @@ Hello
     assert docstring2html(mod.contents['func'], docformat='plaintext') == expected
     captured = capsys.readouterr().out
     assert captured == ''
+
+def test_regression_not_found_linenumbers(capsys: CapSys) -> None:
+    """
+    Test for issue https://github.com/twisted/pydoctor/issues/745
+    """
+    code = '''
+    __docformat__ = 'restructuredtext'
+    class Settings:
+        """
+        Object that manages the configuration for Twine.
+
+        This object can only be instantiated with keyword arguments.
+
+        For example,
+
+        .. code-block:: python
+
+            Settings(True, username='fakeusername')
+
+        Will raise a :class:`TypeError`. Instead, you would want
+
+        .. code-block:: python
+
+            Settings(sign=True, username='fakeusername')
+        """
+
+        def check_repository_url(self) -> None:
+            """
+            Verify we are not using legacy PyPI.
+            """
+            ...
+
+        def create_repository(self) -> repository.Repository:
+            """
+            Create a new repository for uploading.
+            """
+            ...
+    '''
+
+    mod = fromText(code, )
+    docstring2html(mod.contents['Settings'])
+    captured = capsys.readouterr().out
+    assert captured == '<test>:15: Cannot find link target for "TypeError"\n'
