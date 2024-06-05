@@ -1,3 +1,35 @@
+pydoctor (23.9.1-1) unstable; urgency=medium
+
+  * Team upload
+  [ Dmitry Shachnev ]
+  * Backport upstream patch to fix tests with Sphinx 7.2.
+
+  [ Carsten Schoenert ]
+  * New upstream version 23.9.1
+  * d/rules: Don't treat depreacations as error
+    (Closes: 1058363)
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Sat, 24 Feb 2024 19:12:56 +0100
+
+pydoctor (23.9.0-2) unstable; urgency=medium
+
+  * Team upload
+  * autopkgtest: Add missing package for test
+  * d/salsa-ci.yml: Add CI configuration for Salsa
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Thu, 02 Nov 2023 18:30:15 +0100
+
+pydoctor (23.9.0-1) unstable; urgency=medium
+
+  * Team upload
+  * New Upstream version 23.9.0
+  * d/control: Update B-D and set BuildProfileSpecs
+  * d/rules: Tuning setup to run pytest based tests while build
+  * autopkgtest: Update required packages for ci tests
+  * autopkgtest: Update test calling setup
+
+ -- Carsten Schoenert <c.schoenert@t-online.de>  Wed, 01 Nov 2023 09:09:04 +0100
+
 pydoctor (23.4.1-1) unstable; urgency=medium
 
   * Team upload
